@@ -3,7 +3,6 @@ package fetch
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -60,7 +59,7 @@ func download(video *utube.VideoMetaData, videoPath string, dontExtractMp3 bool)
 		color.C256(25).Println("Extracting audio ...")
 		fname := filename
 		mp3 := strings.TrimRight(fname, filepath.Ext(fname)) + ".mp3"
-		cmd := exec.Command(ffmpeg, "-y", "-i", fname, "-vn", mp3)
+		cmd := exec.Command(ffmpeg, "-v", "warning", "-hide_banner", "-stats", "-y", "-i", fname, "-vn", mp3)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -77,18 +76,20 @@ func download(video *utube.VideoMetaData, videoPath string, dontExtractMp3 bool)
 /*
 VideoFromYoutube fetch a video from youtube and extract the mp3 if you don't set the flag 'full' to true
 */
-func VideoFromYoutube(id, path string, full bool) {
+func VideoFromYoutube(id, path string, full bool) error {
 	video, err := utube.GetVideoMetaData(id)
-	if err == nil {
-		filename, err := download(&video, path, full)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if full == false {
-			e := os.Remove(filename)
-			if e != nil {
-				log.Fatal(err)
-			}
+	if err != nil {
+		return nil
+	}
+	filename, err := download(&video, path, full)
+	if err != nil {
+		return err
+	}
+	if full == false {
+		e := os.Remove(filename)
+		if e != nil {
+			return e
 		}
 	}
+	return nil
 }

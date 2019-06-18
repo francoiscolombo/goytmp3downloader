@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/francoiscolombo/goytmp3downloader/fetch"
+	"github.com/francoiscolombo/goytmp3downloader/play"
 	"github.com/francoiscolombo/goytmp3downloader/search"
 	"gopkg.in/gookit/color.v1"
 )
@@ -21,6 +22,7 @@ type parameters struct {
 	Search  string
 	Fetch   string
 	Path    string
+	Play    string
 	Full    bool
 	Version bool
 	Help    bool
@@ -46,7 +48,11 @@ func usage() {
 	don't extract the mp3. otherwise, the video is downloaded and the audio is
 	extracted, then the video from which you extract the audio is removed.
 
-  3/ Additional commands
+ 3/ Playback mp3
+	$ goytmp3downloader --play <mp3 path>
+	you have to enter the path where is located the mp3 you want to play.
+
+  4/ Additional commands
      $ goytmp3downloader --version
      $ goytmp3downloader --help
 
@@ -65,6 +71,7 @@ func main() {
 	flag.StringVar(&params.Search, "search", "???", "search for videos / mp3 to download")
 	flag.StringVar(&params.Fetch, "fetch", "???", "id of the video / mp3 to download")
 	flag.StringVar(&params.Path, "path", ".", "allow to download to another path instead of the current one")
+	flag.StringVar(&params.Play, "play", "???", "allow to play a mp3")
 	flag.BoolVar(&params.Full, "full", false, "download the video but don't extract the mp3")
 	flag.BoolVar(&params.Version, "version", false, "display the version and exit")
 	flag.BoolVar(&params.Help, "help", false, "display help and exit")
@@ -103,7 +110,24 @@ func main() {
 		fmt.Printf("  > Download video with id : '%s'\n", cprm(params.Fetch))
 		fmt.Printf("  > Download to path : '%s'\n", cprm(params.Path))
 		fmt.Printf("  > Don't extract mp3 : '%s'\n", cprm(fmt.Sprintf("%t", params.Full)))
-		fetch.VideoFromYoutube(params.Fetch, params.Path, params.Full)
+		err := fetch.VideoFromYoutube(params.Fetch, params.Path, params.Full)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+	}
+
+	if params.Play != "???" {
+		ccmd := color.FgLightBlue.Render
+		cprm := color.FgLightCyan.Render
+		cctrlc := color.FgLightYellow.Render
+		fmt.Printf("- %s command selected, with the following parameters:\n", ccmd("Play"))
+		fmt.Printf("  > Mp3 path : '%s'\n", cprm(params.Play))
+		fmt.Printf("  Press %s to stop...\n", cctrlc("CTRL+C"))
+		err := play.Mp3(params.Play)
+		if err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(0)
 	}
 

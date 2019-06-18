@@ -104,7 +104,7 @@ type VideoMetaData struct {
 // SearchVideos is used to search a list of videos containing the search string that you pass.
 func SearchVideos(query, key string) (results []VideoMetaData, err error) {
 	searchResults := SearchResults{}
-	urlSearch := fmt.Sprintf("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=%d&q=%s&key=%s", NbLinksToRetrieve, url.QueryEscape(query), key)
+	urlSearch := fmt.Sprintf("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=%d&order=relevance&q=%s&safeSearch=strict&type=video&videoSyndicated=true&key=%s", NbLinksToRetrieve, url.QueryEscape(query), key)
 	req, _ := http.NewRequest("GET", urlSearch, nil)
 	req.Header.Add("cache-control", "no-cache")
 	res, err := http.DefaultClient.Do(req)
