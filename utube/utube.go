@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/schollz/progressbar"
@@ -102,9 +103,12 @@ type VideoMetaData struct {
 }
 
 // SearchVideos is used to search a list of videos containing the search string that you pass.
-func SearchVideos(query, key string) (results []VideoMetaData, err error) {
+func SearchVideos(query, key, pageToken string) (results []VideoMetaData, nextPageToken string, err error) {
 	searchResults := SearchResults{}
 	urlSearch := fmt.Sprintf("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=%d&order=relevance&q=%s&safeSearch=strict&type=video&videoSyndicated=true&key=%s", NbLinksToRetrieve, url.QueryEscape(query), key)
+	if pageToken != "" {
+		urlSearch = fmt.Sprintf("%s&pageToken=%s", urlSearch, pageToken)
+	}
 	req, _ := http.NewRequest("GET", urlSearch, nil)
 	req.Header.Add("cache-control", "no-cache")
 	res, err := http.DefaultClient.Do(req)
@@ -118,21 +122,29 @@ func SearchVideos(query, key string) (results []VideoMetaData, err error) {
 	}
 	body, _ := ioutil.ReadAll(res.Body)
 	json.Unmarshal(body, &searchResults)
+	nextPageToken = searchResults.NextPageToken
 	bar := progressbar.NewOptions(len(searchResults.Items))
 	bar.RenderBlank()
+	var wg sync.WaitGroup
+	wg.Add(len(searchResults.Items))
 	for _, item := range searchResults.Items {
-		bar.Add(1)
-		metadata, e := GetVideoMetaData(item.ID.VideoID)
-		if e == nil {
-			itemTitle, _ := url.QueryUnescape(item.Snippet.Title)
-			t, _ := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
-			metadata.ID = item.ID.VideoID
-			metadata.Title = itemTitle
-			metadata.Date = t.Format("Monday, 02-Jan-06")
-			metadata.Description = item.Snippet.Description
-			results = append(results, metadata)
-		}
+		go func(item Item) {
+			// Do work.
+			metadata, e := GetVideoMetaData(item.ID.VideoID)
+			if e == nil {
+				itemTitle, _ := url.QueryUnescape(item.Snippet.Title)
+				t, _ := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
+				metadata.ID = item.ID.VideoID
+				metadata.Title = itemTitle
+				metadata.Date = t.Format("Monday, 02-Jan-06")
+				metadata.Description = item.Snippet.Description
+				results = append(results, metadata)
+			}
+			bar.Add(1)
+			wg.Done()
+		}(item)
 	}
+	wg.Wait()
 	fmt.Println()
 	return
 }

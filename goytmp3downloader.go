@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	versionNumber = "0.1"
-	versionName   = "scarlet needle"
+	versionNumber = "0.2"
+	versionName   = "lightning plasma"
 	youtubeAPIKey = "AIzaSyDL_uUF6-4Kxf3NwOPFhOqyBX71SRcFKhE"
 )
 
@@ -63,7 +63,7 @@ https://github.com/francoiscolombo/goytmp3downloader`)
 func main() {
 
 	fmt.Printf("\n%s on ", color.FgGreen.Render("Welcome"))
-	color.S256(15, 124).Print("goytmp3downloader")
+	color.S256(15, 208).Print("goytmp3downloader")
 	fmt.Printf("\n----------------------------\n\n")
 
 	var params parameters
@@ -87,7 +87,8 @@ func main() {
 		fmt.Print("version ")
 		color.C256(69).Print(versionNumber)
 		fmt.Print(" ")
-		color.S256(124, 231).Printf("(%s)\n", versionName)
+		color.S256(124, 231).Printf("(%s)", versionName)
+		fmt.Println()
 		os.Exit(0)
 	}
 
