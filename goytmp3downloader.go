@@ -134,6 +134,6 @@ func main() {
 
 	color.Print("<red>Sorry my friend</>, but you didn't give me the good parameters, so I'm not able to help you!\n")
 	color.Print("<cyan>Maybe a little help can be what you really need?</> Okay, this should be usefull then...\n\n")
-	usage()
+	flag.Usage()
 
 }
