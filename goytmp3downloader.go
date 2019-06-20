@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	versionNumber = "0.2"
-	versionName   = "lightning plasma"
+	versionNumber = "0.3"
+	versionName   = "galaxian explosion"
 	youtubeAPIKey = "AIzaSyDL_uUF6-4Kxf3NwOPFhOqyBX71SRcFKhE"
 )
 
